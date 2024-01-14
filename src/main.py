@@ -1,6 +1,9 @@
+import os
 import sys
 import requests
-from fpdf import FPDF
+from reportlab.platypus import SimpleDocTemplate, Paragraph
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet
 
 def main():
     args = sys.argv
@@ -11,10 +14,16 @@ def main():
     except Exception as e:
         print(e)
         exit()
-    
-    article = getArticle(args[1])
 
-def getArticle(searchTerm):
+    searchTerm = args[1]
+    
+    article = get_article(searchTerm = searchTerm)
+    
+    outputDir = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "output"))
+
+    export_pdf(dir = outputDir, title = searchTerm, content = article)
+
+def get_article(searchTerm):
     api_url = "https://en.wikipedia.org/w/api.php"
 
     params = {
@@ -26,7 +35,7 @@ def getArticle(searchTerm):
         "format": "json"
     }
 
-    response = requests.get(api_url, params)
+    response = requests.get(url = api_url, params = params)
 
     responseJson = response.json()
 
@@ -35,6 +44,20 @@ def getArticle(searchTerm):
     pageText = page["extract"]
 
     return pageText
+
+def export_pdf(dir, title, content):
+    outputPath = os.path.join(dir, "{}.pdf".format(title))
+
+    pdf = SimpleDocTemplate(filename = outputPath, pagesize = A4)
+
+    styles = getSampleStyleSheet()
+
+    pdfTitle = Paragraph(title, styles["Title"])
+    pdfParagraph = Paragraph(content, styles["Normal"])
+
+    pdf.build([pdfTitle, pdfParagraph])
+
+    print("{}.pdf saved in {}".format(title, dir))
 
 if __name__ == "__main__":
     main()
