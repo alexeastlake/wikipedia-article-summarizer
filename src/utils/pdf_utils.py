@@ -12,7 +12,7 @@ def export_pdf(dir, title, text, thumbnail, images):
 
         if not os.path.exists(dir):
             os.makedirs(dir)
-            print("Output directory {} created".format(dir))
+            print("Output directory {} created\n".format(dir))
 
         output_path = os.path.join(dir, "{}.pdf".format(title))
 
@@ -20,13 +20,13 @@ def export_pdf(dir, title, text, thumbnail, images):
         styles = getSampleStyleSheet()
 
         flowables = [Paragraph(title, styles["Title"])]
-        print("Added title")
+        print("Added title\n")
         
         if thumbnail:
             x, y = calculate_image_dimensions(thumbnail, 200)
 
             flowables.append(ReportLabImage(BytesIO(thumbnail), x, y))
-            print("Added thumbnail")
+            print("Added thumbnail\n")
             
         if images:
             images_table = [[]]
@@ -36,16 +36,16 @@ def export_pdf(dir, title, text, thumbnail, images):
                 x, y = calculate_image_dimensions(image, 350 / len(images))
 
                 images_table[0].append(ReportLabImage(BytesIO(image), x, y))
-                print("Added image")
+                print("Added image\n")
 
             flowables.append(Table(data = images_table, style = TableStyle([("VALIGN", (-1, -1), (-1, -1), "MIDDLE")])))
         
         flowables.append(Paragraph(text, styles["BodyText"]))
-        print("Added paragraph")
-        
+        print("Added paragraph\n")
+
         pdf.build(flowables)
 
-        print("{}.pdf saved in {}".format(title, dir))
+        print("{}.pdf saved in {}\n".format(title, dir))
     except Exception as e:
         print("Failed to export to PDF")
         print(e)

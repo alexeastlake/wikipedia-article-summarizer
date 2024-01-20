@@ -29,11 +29,11 @@ def get_article_titles(article_title):
 
         titles = [page.get("title") for page in pages]
 
-        print("Retrieved articles {}".format(", ".join(titles)))
+        print("Retrieved articles {}\n".format(", ".join(titles)))
 
         return titles
     except Exception as e:
-        print("Failed to retrieve articles: {}".format(e))
+        print("Failed to retrieve articles: {\n}".format(e))
 
         return []
 
@@ -53,11 +53,11 @@ def search_article_titles():
                 continue
             elif len(article_titles) > 1:
                 for title in article_titles:
-                    if search_title == title:
-                         if input("A retrieved article has title: {}. Confirm this article(y/n)? ".format(article_titles[0])) == "y":
+                    if search_title.lower() == title.lower():
+                         if input("A retrieved article has title: {}. Confirm this article (y/n)? ".format(article_titles[0])) == "y":
                             return article_titles[0]
                
-                print("More than 1 article found, narrow your title search")
+                print("More than 1 article found, narrow your title search\n")
                 continue
     except Exception as e:
         print("Failed to search articles: {}".format(e))
@@ -80,11 +80,11 @@ def get_article_text(article_title):
         response_json = response.json()
 
         page_text = next(iter((response_json.get("query").get("pages").values()))).get("extract")
-        print("Retrieved article text")
+        print("Retrieved article text\n")
 
         return page_text
     except Exception as e:
-        print("Failed to retrieve article text: {}".format(e))
+        print("Failed to retrieve article text: {}\n".format(e))
 
 def get_url_content(url):
     try:
@@ -109,11 +109,11 @@ def get_article_image(image_title):
 
         image_url = next(iter((response_json.get("query").get("pages").values()))).get("imageinfo")[0].get("url")
         image = get_url_content(image_url)
-        print("Retrieved article image")
+        print("Retrieved article image\n")
 
         return image
     except Exception as e:
-        print("Failed to retrieve article image: {}".format(e))
+        print("Failed to retrieve article image: {}\n".format(e))
 
 def get_article_images(article_title, num_images):
     try:
@@ -144,10 +144,11 @@ def get_article_images(article_title, num_images):
 
             images.append(get_article_image(image_title))
 
+        print("Retrieved {} article images\n".format(len(images)))
         
         return images
     except Exception as e:
-        print("Failed to retrieve article images: {}".format(e))
+        print("Failed to retrieve article images: {}\n".format(e))
 
 def get_article_thumbnail(article_title):
     try:
@@ -170,8 +171,8 @@ def get_article_thumbnail(article_title):
         thumbnail_url = thumbnail.get("source")
 
         thumbnail_image = get_url_content(thumbnail_url)
-        print("Retrieved article thumbnail")
+        print("Retrieved article thumbnail\n")
 
         return thumbnail_image
     except Exception as e:
-        print("Failed to retrieve article thumbnail: {}".format(e))
+        print("Failed to retrieve article thumbnail: {}\n".format(e))
