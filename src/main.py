@@ -1,63 +1,30 @@
 import os
 import sys
-import requests
-from reportlab.platypus import SimpleDocTemplate, Paragraph
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet
+from utils import wikipedia_api_utils
+from utils import pdf_utils
 
 def main():
     args = sys.argv
 
     try:
-        if ((len(args) != 2) or (type(args[1]) != str)):
-            raise ValueError("Invalid arguments: Must pass 1 string article name")
+        if (len(args) != 3):
+            raise ValueError("Invalid arguments: Invalid number of arguments")
+        elif ((type(args[1]) != str) or (type(int(args[2])) != int)):
+            raise ValueError("Invalid arguments: Invalid argument types")
     except Exception as e:
         print(e)
         exit()
 
-    searchTerm = args[1]
-    
-    article = get_article(searchTerm = searchTerm)
-    
-    outputDir = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "output"))
+    article_title = args[1]
 
-    export_pdf(dir = outputDir, title = searchTerm, content = article)
+    article_text = wikipedia_api_utils.get_article_text(article_title)
 
-def get_article(searchTerm):
-    api_url = "https://en.wikipedia.org/w/api.php"
+    num_images = int(args[2])
+    article_images = wikipedia_api_utils.get_article_images(article_title, num_images)
 
-    params = {
-        "action": "query",
-        "titles": searchTerm,
-        "prop": "extracts",
-        "exintro": True,
-        "explaintext": True,
-        "format": "json"
-    }
+    output_dir = os.path.join(os.path.normpath(os.path.join(os.path.dirname(__file__), "..")), "output")
 
-    response = requests.get(url = api_url, params = params)
-
-    responseJson = response.json()
-
-    pageid = list(responseJson["query"]["pages"].keys())[0]
-    page = responseJson["query"]["pages"][pageid]
-    pageText = page["extract"]
-
-    return pageText
-
-def export_pdf(dir, title, content):
-    outputPath = os.path.join(dir, "{}.pdf".format(title))
-
-    pdf = SimpleDocTemplate(filename = outputPath, pagesize = A4)
-
-    styles = getSampleStyleSheet()
-
-    pdfTitle = Paragraph(title, styles["Title"])
-    pdfParagraph = Paragraph(content, styles["Normal"])
-
-    pdf.build([pdfTitle, pdfParagraph])
-
-    print("{}.pdf saved in {}".format(title, dir))
+    pdf_utils.export_pdf(dir = output_dir, title = article_title, text = article_text, images = article_images)
 
 if __name__ == "__main__":
     main()
