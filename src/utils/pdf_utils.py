@@ -32,7 +32,6 @@ def export_pdf(dir, title, text, thumbnail, images):
             images_table = [[]]
 
             for image in images:
-                print(image[:20])
                 x, y = calculate_image_dimensions(image, 350 / len(images))
 
                 images_table[0].append(ReportLabImage(BytesIO(image), x, y))
