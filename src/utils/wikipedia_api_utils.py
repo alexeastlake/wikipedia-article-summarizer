@@ -118,7 +118,7 @@ def get_article_image(image_title):
 
 def get_article_images(article_title, num_images):
     try:
-        print("Getting {} article {} images...".format(num_images, article_title))
+        print("Getting {} article {} image(s)...".format(num_images, article_title))
 
         request_params = {
             "action": "query",
@@ -132,10 +132,17 @@ def get_article_images(article_title, num_images):
         response = requests.get(API_URL, request_params)
         response_json = response.json()
 
-        page_images = next(iter((response_json.get("query").get("pages").values()))).get("images")
+        valid_file_types = [".jpg", ".jpeg", ".png"]
+
+        page = next(iter((response_json.get("query").get("pages").values())))
+
+        if "images" not in page.keys():
+            raise ValueError("No images found for page")
+
+        page_images = page.get("images")
         page_image_titles = [image.get("title") for image in page_images]
-        filtered_page_image_titles = [title for title in page_image_titles if ".svg" not in title.lower()]
-        chosen_indexes = random.sample(range(0, len(filtered_page_image_titles)), num_images)
+        filtered_page_image_titles = [title for title in page_image_titles if any(title.lower().endswith(file_type) for file_type in valid_file_types)]
+        chosen_indexes = random.sample(range(0, len(filtered_page_image_titles)), min(len(filtered_page_image_titles), num_images))
         chosen_page_image_titles = [filtered_page_image_titles[i] for i in chosen_indexes]
         
         images = []
@@ -145,11 +152,11 @@ def get_article_images(article_title, num_images):
 
             images.append(get_article_image(image_title))
 
-        print("Retrieved {} article images\n".format(len(images)))
+        print("Retrieved {} article image(s)\n".format(len(images)))
         
         return images
     except Exception as e:
-        print("Failed to retrieve article images: {}\n".format(e))
+        print("Failed to retrieve article image(s): {}\n".format(e))
 
 def get_article_thumbnail(article_title):
     try:
@@ -168,7 +175,12 @@ def get_article_thumbnail(article_title):
         response = requests.get(API_URL, request_params)
         response_json = response.json()
 
-        thumbnail = next(iter((response_json.get("query").get("pages").values()))).get("thumbnail")
+        page = next(iter((response_json.get("query").get("pages").values())))
+
+        if "thumbnail" not in page.keys():
+            raise ValueError("No thumbnail found for page")
+
+        thumbnail = page.get("thumbnail")
         thumbnail_url = thumbnail.get("source")
 
         thumbnail_image = get_url_content(thumbnail_url)

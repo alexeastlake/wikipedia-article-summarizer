@@ -18,9 +18,11 @@ def export_pdf(dir, title, text, thumbnail, images, url):
 
         pdf = SimpleDocTemplate(filename = output_path, pagesize = A4)
         styles = getSampleStyleSheet()
+        flowables = []
 
-        flowables = [Paragraph(title, styles["Title"])]
-        print("Added title\n")
+        if title:
+            flowables.append(Paragraph(title, styles["Title"]))
+            print("Added title\n")
         
         if thumbnail:
             x, y = calculate_image_dimensions(thumbnail, 200)
@@ -39,11 +41,14 @@ def export_pdf(dir, title, text, thumbnail, images, url):
 
             flowables.append(Table(data = images_table, style = TableStyle([("VALIGN", (-1, -1), (-1, -1), "MIDDLE")])))
         
-        text = text.replace("\n", "<br/><br/>")
-        flowables.append(Paragraph(text, styles["BodyText"]))
-        print("Added paragraph\n")
+        if text:
+            text = text.replace("\n", "<br/><br/>")
+            flowables.append(Paragraph(text, styles["BodyText"]))
+            print("Added paragraph\n")
 
-        flowables.append(Paragraph("Source: " + url, styles["BodyText"]))
+        if url:
+            flowables.append(Paragraph("Source: " + url, styles["BodyText"]))
+            print("Added source\n")
 
         pdf.build(flowables)
 
