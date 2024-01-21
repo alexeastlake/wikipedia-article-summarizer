@@ -6,7 +6,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 from io import BytesIO
 from PIL import Image as PILImage
 
-def export_pdf(dir, title, text, thumbnail, images):
+def export_pdf(dir, title, text, thumbnail, images, url):
     try:
         print("Exporting to PDF...")
 
@@ -27,7 +27,7 @@ def export_pdf(dir, title, text, thumbnail, images):
 
             flowables.append(ReportLabImage(BytesIO(thumbnail), x, y))
             print("Added thumbnail\n")
-            
+        
         if images:
             images_table = [[]]
 
@@ -39,12 +39,15 @@ def export_pdf(dir, title, text, thumbnail, images):
 
             flowables.append(Table(data = images_table, style = TableStyle([("VALIGN", (-1, -1), (-1, -1), "MIDDLE")])))
         
+        text = text.replace("\n", "<br/><br/>")
         flowables.append(Paragraph(text, styles["BodyText"]))
         print("Added paragraph\n")
 
+        flowables.append(Paragraph("Source: " + url, styles["BodyText"]))
+
         pdf.build(flowables)
 
-        print("{}.pdf saved in {}\n".format(title, dir))
+        print("{}.pdf saved in {}".format(title, dir))
     except Exception as e:
         print("Failed to export to PDF")
         print(e)

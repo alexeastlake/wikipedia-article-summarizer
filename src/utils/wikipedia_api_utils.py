@@ -52,10 +52,10 @@ def search_article_titles():
             elif len(article_titles) <= 0:             
                 continue
             elif len(article_titles) > 1:
-                for title in article_titles:
+                for i, title in enumerate(article_titles):
                     if search_title.lower() == title.lower():
-                         if input("A retrieved article has title: {}. Confirm this article (y/n)? ".format(article_titles[0])) == "y":
-                            return article_titles[0]
+                         if input("A retrieved article has title: {}. Confirm this article (y/n)? ".format(article_titles[i])) == "y":
+                            return article_titles[i]
                
                 print("More than 1 article found, narrow your title search\n")
                 continue
@@ -72,6 +72,7 @@ def get_article_text(article_title):
             "prop": "extracts",
             "exintro": True,
             "explaintext": True,
+            "exsectionformat": "wiki",
             "redirects": True,
             "format": "json"
         }
@@ -176,3 +177,26 @@ def get_article_thumbnail(article_title):
         return thumbnail_image
     except Exception as e:
         print("Failed to retrieve article thumbnail: {}\n".format(e))
+
+def get_article_url(article_title):
+    try:
+        print("Getting article {} URL...".format(article_title))
+
+        request_params = {
+            "action": "query",
+            "titles": article_title,
+            "prop": "info",
+            "inprop": "url",
+            "redirects": True,
+            "format": "json"
+        }
+
+        response = requests.get(API_URL, request_params)
+        response_json = response.json()
+
+        url = next(iter((response_json.get("query").get("pages").values()))).get("fullurl")
+        print("Retrieved article URL\n")
+
+        return url
+    except Exception as e:
+        print("Failed to retrieve article {} URL".format(article_title))
