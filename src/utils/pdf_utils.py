@@ -6,49 +6,40 @@ from reportlab.lib.styles import getSampleStyleSheet
 from io import BytesIO
 from PIL import Image as PILImage
 
+# Export given data to PDF
 def export_pdf(dir, title, text, thumbnail, images, url):
     try:
         print("Exporting to PDF...")
 
+        # Creates output directory if not found
         if not os.path.exists(dir):
             os.makedirs(dir)
             print("Output directory {} created\n".format(dir))
 
+        # PDF setup
         output_path = os.path.join(dir, "{}.pdf".format(title))
-
         pdf = SimpleDocTemplate(filename = output_path, pagesize = A4)
-        styles = getSampleStyleSheet()
         flowables = []
 
+        # Adds title if given title
         if title:
-            flowables.append(Paragraph(title, styles["Title"]))
-            print("Added title\n")
+            flowables = add_title(flowables, title)
         
+        # Adds thumbnail image if given thumbnail
         if thumbnail:
-            x, y = calculate_image_dimensions(thumbnail, 200)
-
-            flowables.append(ReportLabImage(BytesIO(thumbnail), x, y))
-            print("Added thumbnail\n")
+            flowables = add_thumbnail(flowables, thumbnail)
         
+        # Adds the smaller image row if given images
         if images:
-            images_table = [[]]
-
-            for image in images:
-                x, y = calculate_image_dimensions(image, 350 / len(images))
-
-                images_table[0].append(ReportLabImage(BytesIO(image), x, y))
-                print("Added image\n")
-
-            flowables.append(Table(data = images_table, style = TableStyle([("VALIGN", (-1, -1), (-1, -1), "MIDDLE")])))
+            flowables = add_images_table(flowables, images)
         
+        # Adds text if given text
         if text:
-            text = text.replace("\n", "<br/><br/>")
-            flowables.append(Paragraph(text, styles["BodyText"]))
-            print("Added paragraph\n")
+            flowables = add_text(flowables, text)
 
+        # Adds a source URL if given url
         if url:
-            flowables.append(Paragraph("Source: " + url, styles["BodyText"]))
-            print("Added source\n")
+            flowables = add_text(flowables, url)
 
         pdf.build(flowables)
 
@@ -57,6 +48,42 @@ def export_pdf(dir, title, text, thumbnail, images, url):
         print("Failed to export to PDF")
         print(e)
 
+def add_title(flowables, text):
+    styles = getSampleStyleSheet()
+    flowables.append(Paragraph(text, styles["Title"]))
+    print("Added title\n")
+
+    return flowables
+
+def add_thumbnail(flowables, image):
+    x, y = calculate_image_dimensions(image, 200)
+    flowables.append(ReportLabImage(BytesIO(image), x, y))
+    print("Added thumbnail\n")
+
+    return flowables
+
+def add_images_table(flowables, images):
+    images_table = [[]]
+
+    for image in images:
+        x, y = calculate_image_dimensions(image, 350 / len(images))
+        images_table[0].append(ReportLabImage(BytesIO(image), x, y))
+        print("Added image to table\n")
+
+    flowables.append(Table(data = images_table, style = TableStyle([("VALIGN", (-1, -1), (-1, -1), "MIDDLE")])))
+    print("Added images table\n")
+
+    return flowables
+
+def add_text(flowables, text):
+    styles = getSampleStyleSheet()
+    text = text.replace("\n", "<br/><br/>")
+    flowables.append(Paragraph(text, styles["BodyText"]))
+    print("Added paragraph\n")
+
+    return flowables
+
+# Calculates resized image dimensions retaining the original aspect ratio, based on the desired largest side
 def calculate_image_dimensions(image, largest_side):
     old_x, old_y = PILImage.open(BytesIO(image)).size
 

@@ -3,6 +3,7 @@ import random
 
 API_URL = "https://en.wikipedia.org/w/api.php"
 
+# Gets titles of articles as a search result for the given article title
 def get_article_titles(article_title):
     try:
         if not article_title:
@@ -37,6 +38,7 @@ def get_article_titles(article_title):
 
         return []
 
+# Loop to search for article titles using user input
 def search_article_titles():
     try:
         while True:
@@ -62,6 +64,7 @@ def search_article_titles():
     except Exception as e:
         print("Failed to search articles: {}".format(e))
 
+# Gets article intro text from article title
 def get_article_text(article_title):
     try:
         print("Getting article text...")
@@ -87,12 +90,14 @@ def get_article_text(article_title):
     except Exception as e:
         print("Failed to retrieve article text: {}\n".format(e))
 
+# Gets the content of a URL
 def get_url_content(url):
     try:
         return requests.get(url = url, headers = {"User-Agent": "Script"}, allow_redirects = True).content
     except Exception as e:
         raise e
 
+# Gets an image from wikipedia with the given image title
 def get_article_image(image_title):
     try:
         print("Getting article image {}...".format(image_title))
@@ -116,6 +121,7 @@ def get_article_image(image_title):
     except Exception as e:
         print("Failed to retrieve article image: {}\n".format(e))
 
+# Gets the given max number of random images from the article with the given title
 def get_article_images(article_title, num_images):
     try:
         print("Getting {} article {} image(s)...".format(num_images, article_title))
@@ -158,6 +164,7 @@ def get_article_images(article_title, num_images):
     except Exception as e:
         print("Failed to retrieve article image(s): {}\n".format(e))
 
+# Gets the thumbnail image for an article with the given title
 def get_article_thumbnail(article_title):
     try:
         print("Getting article {} thumbnail...".format(article_title))
@@ -190,6 +197,7 @@ def get_article_thumbnail(article_title):
     except Exception as e:
         print("Failed to retrieve article thumbnail: {}\n".format(e))
 
+# Gets the URL of an article with the given title
 def get_article_url(article_title):
     try:
         print("Getting article {} URL...".format(article_title))
