@@ -7,7 +7,7 @@ from io import BytesIO
 from PIL import Image as PILImage
 
 # Export given data to PDF
-def export_pdf(dir, title, text, thumbnail, images, url):
+def export_pdf(dir, title, content):
     try:
         print("Exporting to PDF...")
 
@@ -21,25 +21,18 @@ def export_pdf(dir, title, text, thumbnail, images, url):
         pdf = SimpleDocTemplate(filename = output_path, pagesize = A4)
         flowables = []
 
-        # Adds title if given title
-        if title:
-            flowables = add_title(flowables, title)
+        flowables = add_title(flowables, title)
         
-        # Adds thumbnail image if given thumbnail
-        if thumbnail:
-            flowables = add_thumbnail(flowables, thumbnail)
-        
-        # Adds the smaller image row if given images
-        if images:
-            flowables = add_images_table(flowables, images)
-        
-        # Adds text if given text
-        if text:
-            flowables = add_text(flowables, text)
+        passed_data = content.keys()
 
-        # Adds a source URL if given url
-        if url:
-            flowables = add_text(flowables, url)
+        if "thumbnail" in passed_data:
+            flowables = add_thumbnail(flowables, content["thumbnail"])
+        if "images" in passed_data:
+            flowables = add_images_table(flowables, content["images"])
+        if "text" in passed_data:
+            flowables = add_text(flowables, content["text"])
+        if "source" in passed_data:
+            flowables = add_text(flowables, content["source"])
 
         pdf.build(flowables)
 
@@ -51,14 +44,12 @@ def export_pdf(dir, title, text, thumbnail, images, url):
 def add_title(flowables, text):
     styles = getSampleStyleSheet()
     flowables.append(Paragraph(text, styles["Title"]))
-    print("Added title\n")
 
     return flowables
 
 def add_thumbnail(flowables, image):
     x, y = calculate_image_dimensions(image, 200)
     flowables.append(ReportLabImage(BytesIO(image), x, y))
-    print("Added thumbnail\n")
 
     return flowables
 
@@ -68,10 +59,8 @@ def add_images_table(flowables, images):
     for image in images:
         x, y = calculate_image_dimensions(image, 350 / len(images))
         images_table[0].append(ReportLabImage(BytesIO(image), x, y))
-        print("Added image to table\n")
 
     flowables.append(Table(data = images_table, style = TableStyle([("VALIGN", (-1, -1), (-1, -1), "MIDDLE")])))
-    print("Added images table\n")
 
     return flowables
 
@@ -79,7 +68,6 @@ def add_text(flowables, text):
     styles = getSampleStyleSheet()
     text = text.replace("\n", "<br/><br/>")
     flowables.append(Paragraph(text, styles["BodyText"]))
-    print("Added paragraph\n")
 
     return flowables
 

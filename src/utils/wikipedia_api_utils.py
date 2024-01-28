@@ -10,7 +10,7 @@ def get_url_content(url):
     except Exception as e:
         raise e
 
-def search_page_titles(page_title):
+def get_page_titles(page_title):
     try:
         request_params = {
             "action": "query",
@@ -36,13 +36,13 @@ def search_page_titles(page_title):
         raise e
 
 # Gets page intro text from page title
-def get_page_text(page_title):
+def get_page_text(page_title, short):
     try:
         request_params = {
             "action": "query",
             "titles": page_title,
             "prop": "extracts",
-            "exintro": True,
+            "exintro": short,
             "explaintext": True,
             "exsectionformat": "wiki",
             "redirects": True,
@@ -106,11 +106,15 @@ def filter_image_titles_filetype(image_titles, file_types):
         valid_image_titles = []
 
         for title in image_titles:
-            if any(title.lower().endswith(file_type.lower()) for file_type in file_types):
-                valid_image_titles.append(title)
-            
+            for file_type in file_types:
+                if title.lower().endswith(file_type):
+                    valid_image_titles.append(title)
+                    break
+
         if not valid_image_titles:
             raise ValueError("No page images found in valid formats {}".format(file_types.join(", ")))
+        
+        return valid_image_titles
     except Exception as e:
         raise e
 
@@ -120,6 +124,8 @@ def get_random_image_titles(image_titles, max_images):
 
         for i in random.sample(range(len(image_titles)), min(len(image_titles), max_images)):
             chosen_titles.append(image_titles[i])
+        
+        return chosen_titles
     except Exception as e:
         raise e
 
@@ -146,8 +152,6 @@ def get_page_images(page_title, file_types, max_images):
 # Gets the thumbnail image for a page with the given title
 def get_page_thumbnail(page_title):
     try:
-        print("Getting page {} thumbnail...".format(page_title))
-
         request_params = {
             "action": "query",
             "titles": page_title,
@@ -169,17 +173,14 @@ def get_page_thumbnail(page_title):
         thumbnail_url = thumbnail.get("source")
 
         thumbnail_image = get_url_content(thumbnail_url)
-        print("Retrieved page thumbnail\n")
 
         return thumbnail_image
     except Exception as e:
-        print("Failed to retrieve page thumbnail: {}\n".format(e))
+        raise e
 
 # Gets the URL of a page with the given title
 def get_page_url(page_title):
     try:
-        print("Getting page {} URL...".format(page_title))
-
         request_params = {
             "action": "query",
             "titles": page_title,
@@ -193,8 +194,7 @@ def get_page_url(page_title):
         response_json = response.json()
 
         url = next(iter((response_json.get("query").get("pages").values()))).get("fullurl")
-        print("Retrieved page URL\n")
 
         return url
     except Exception as e:
-        print("Failed to retrieve page {} URL".format(page_title))
+        raise e
